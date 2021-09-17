@@ -235,4 +235,15 @@ describe GildedRose do
       _(result[0].quality).must_equal 0
     end
   end
+
+  describe "When Conjured has expired" do
+    it "degrades twice as fast as normal items" do
+      items = [Item.new(name="Conjured Mana Cake", sell_in=-1, quality=49)]
+      gr = GildedRose.new(items)
+
+      result = gr.update_quality
+
+      _(result[0].quality).must_equal 45
+    end
+  end
 end
