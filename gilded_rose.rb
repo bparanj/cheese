@@ -5,14 +5,6 @@ class BaseItem
     @item = item
   end
 
-  def update
-    decrease_sellin
-
-    yield self if block_given?
-
-    limit_quality
-  end
-
   def updater
     update do |item|
       item.decrease_quality
@@ -52,6 +44,14 @@ class BaseItem
     reset_quality if item.quality < 0
 
     item.quality = 50 if item.quality > 50
+  end
+
+  def update
+    decrease_sellin
+
+    yield self if block_given?
+
+    limit_quality
   end
 end
 
