@@ -1,5 +1,7 @@
 class BaseItem
   attr_reader :item
+  UPPER_LIMIT = 50
+  LOWER_LIMIT = 0
 
   def initialize(item)
     @item = item
@@ -15,7 +17,7 @@ class BaseItem
   protected
 
   def expired?
-    item.sell_in < 0
+    item.sell_in < LOWER_LIMIT
   end
 
   def decrease_quality
@@ -27,11 +29,11 @@ class BaseItem
   end
 
   def increase_quality
-    item.quality +=1
+    item.quality += 1
   end
 
   def reset_quality
-    item.quality = 0
+    item.quality = LOWER_LIMIT
   end
 
   private 
@@ -41,9 +43,9 @@ class BaseItem
   end
 
   def limit_quality
-    reset_quality if item.quality < 0
+    reset_quality if item.quality < LOWER_LIMIT
 
-    item.quality = 50 if item.quality > 50
+    item.quality = UPPER_LIMIT if item.quality > UPPER_LIMIT
   end
 
   def update
@@ -66,14 +68,17 @@ class AgedBrie < BaseItem
 end
 
 class Backstage < BaseItem
+  VALID_RANGE = (11..6)
+
   def updater 
     update do |item|
       if item.expired?
         item.reset_quality
       else
         item.increase_quality
-        item.increase_quality if item.item.sell_in < 11
-        item.increase_quality if item.item.sell_in < 6
+        if VALID_RANGE.cover?(item.item.sell_in)
+          item.increase_quality
+        end
       end
     end
   end
