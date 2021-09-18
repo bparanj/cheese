@@ -1,5 +1,6 @@
 class BaseItem
   attr_reader :item
+
   UPPER_LIMIT = 50
   LOWER_LIMIT = 0
 
@@ -45,15 +46,19 @@ class BaseItem
   def limit_quality
     reset_quality if item.quality < LOWER_LIMIT
 
-    item.quality = UPPER_LIMIT if item.quality > UPPER_LIMIT
+    reset_upper_quality if item.quality > UPPER_LIMIT
   end
 
   def update
     decrease_sellin
 
-    yield self if block_given?
+    yield self
 
     limit_quality
+  end
+
+  def reset_upper_quality
+    item.quality = UPPER_LIMIT
   end
 end
 
