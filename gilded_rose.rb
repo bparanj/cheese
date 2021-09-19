@@ -1,107 +1,8 @@
-class BaseItem
-  attr_reader :item
-
-  UPPER_LIMIT = 50
-  LOWER_LIMIT = 0
-
-  def initialize(item)
-    @item = item
-  end
-
-  def updater
-    update do |item|
-      item.decrease_quality
-      item.decrease_quality if item.expired?
-    end
-  end
-
-  protected
-
-  def expired?
-    item.sell_in < LOWER_LIMIT
-  end
-
-  def decrease_quality
-    item.quality -= 1
-  end
-  
-  def decrease_quality_by(factor)
-    item.quality -= factor
-  end
-
-  def increase_quality
-    item.quality += 1
-  end
-
-  def reset_quality
-    item.quality = LOWER_LIMIT
-  end
-
-  private 
-
-  def decrease_sellin
-    item.sell_in -= 1
-  end
-
-  def limit_quality
-    reset_quality if item.quality < LOWER_LIMIT
-
-    reset_upper_quality if item.quality > UPPER_LIMIT
-  end
-
-  def update
-    decrease_sellin
-
-    yield self
-
-    limit_quality
-  end
-
-  def reset_upper_quality
-    item.quality = UPPER_LIMIT
-  end
-end
-
-class AgedBrie < BaseItem
-  def updater
-    update do |item|
-      item.increase_quality
-  
-      item.increase_quality if item.expired?
-    end
-  end
-end
-
-class Backstage < BaseItem
-  VALID_RANGE = (11..6)
-
-  def updater 
-    update do |item|
-      if item.expired?
-        item.reset_quality
-      else
-        item.increase_quality
-        if VALID_RANGE.cover?(item.item.sell_in)
-          item.increase_quality
-        end
-      end
-    end
-  end
-end
-
-class ConjuredItem < BaseItem
-  def updater
-    update do |item|
-      decrease_quality_by(2)
-      decrease_quality_by(2) if item.expired?
-    end
-  end
-end
-
-class Sulfuras < BaseItem
-  def updater 
-  end
-end
+require_relative 'base_item'
+require_relative 'aged_brie'
+require_relative 'backstage'
+require_relative 'sulfuras'
+require_relative 'conjured'
 
 class GildedRose
   def initialize(items)
@@ -113,19 +14,19 @@ class GildedRose
       case item.name
       when "Aged Brie"
         aged_brie = AgedBrie.new(item)
-        aged_brie.updater
+        aged_brie.process
       when "Backstage passes to a TAFKAL80ETC concert"
         concert = Backstage.new(item)
-        concert.updater
+        concert.process
       when "Sulfuras, Hand of Ragnaros"
         sulfuras = Sulfuras.new(item)
-        sulfuras.updater
+        sulfuras.process
       when "Conjured Mana Cake"
-        conjure = ConjuredItem.new(item)
-        conjure.updater
+        conjure = Conjured.new(item)
+        conjure.process
       else
         base_item = BaseItem.new(item)
-        base_item.updater
+        base_item.process
       end
     end
   end
